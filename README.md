@@ -1,145 +1,83 @@
-#Korean Personal Color Analysis (PCA) Analyzer
+# Korean Personal Color Analysis (PCA) AI Assistant
 
-This Python application analyzes a photo of a person to determine their Korean Personal Color Analysis (PCA) palette, such as Warm Spring, Cool Summer, Warm Autumn, or Cool Winter. It uses Google's Gemini 1.5 Flash model to examine skin tone, undertone, and other features, then generates a report with recommended colors for makeup, clothing, and accessories. It also creates a color palette image (color_palette.png) to visualize the suggested colors.
-What It Does
+This project provides an AI-powered assistant for Korean Personal Color Analysis (PCA). It analyzes an image of a person using Google's Gemini 1.5 Flash model, determines their most suitable PCA seasonal palette (Spring, Summer, Autumn, Winter, with subtypes), and generates a visual color palette based on the recommendations.
 
-Analyzes Photos: Detects skin tone (light, medium, dark), undertone (warm, cool, neutral), facial features, hair, clothing, and more.
-Generates PCA Report: Provides your PCA palette, an explanation, and specific color suggestions (e.g., coral, peach, olive).
-Creates Color Palette: Saves a visual swatch of recommended colors as an image.
-Simple Interface: Uses a command-line interface for easy photo input and output.
+## Features
 
-Requirements
-To run this project, you’ll need:
+*   **Detailed Image Analysis:** Utilizes Gemini 1.5 Flash to extract comprehensive visual details from an input image, including skin tone, undertone, facial features, hair, clothing, and background.
+*   **Korean PCA Determination:** Based on the detailed analysis, the AI model recommends the most suitable Korean PCA seasonal palette.
+*   **Specific Color Recommendations:** Provides concrete color suggestions for makeup, clothing, and accessories relevant to the determined palette.
+*   **Visual Color Palette Generation:** Automatically creates a `.png` image showcasing the recommended colors, saved locally.
+*   **LangChain & LangGraph Integration:** Leverages LangChain for model interaction and LangGraph for orchestrating the multi-step PCA workflow.
+*   **Interactive CLI:** A simple command-line interface for easy interaction.
 
-Python 3.8 or higher: Download from python.org.
-Git: To clone the repository. Install from git-scm.com.
-Google API Key: For Gemini 1.5 Flash. Get one from Google Cloud.
-A photo (JPEG or PNG) of a person’s face (e.g., a clear selfie).
+## How It Works
 
-Installation
-Follow these steps to set up the project on your computer.
+The application uses a multi-step workflow orchestrated by `langgraph`:
 
-Clone the Repository:Open a terminal (or Command Prompt on Windows) and run:
-git clone https://github.com/Ashrafgalib-beep/korean-pca-analyzer.git
-cd korean-pca-analyzer
+1.  **User Input:** The user provides a command `analyze <image_path>`.
+2.  **Image Loading:** The `load_image_as_bytes` function reads the specified image file and converts it into a byte stream suitable for API submission.
+3.  **Detailed Image Analysis (`analyze_image_detailed`):**
+    *   The `ChatGoogleGenerativeAI` model (Gemini 1.5 Flash) receives the image bytes and a prompt asking for a detailed analysis of the person and their features, including skin tone, hair, clothing, etc.
+    *   The model returns the analysis in a structured JSON format.
+4.  **PCA Prompt Generation (`generate_pca_prompt`):**
+    *   The raw analysis content is parsed.
+    *   A specific prompt tailored for Korean Personal Color Analysis is constructed, incorporating all relevant details from the image analysis.
+5.  **PCA Result Generation (`generate_pca_result`):**
+    *   The `ChatGoogleGenerativeAI` model receives the PCA-specific prompt.
+    *   It processes the prompt and generates a PCA report, including the recommended palette, an explanation, and a list of specific color names, all in JSON format.
+6.  **Color Palette Image Generation (`generate_color_palette_image`):**
+    *   The list of recommended color names is extracted from the PCA result.
+    *   Using the `Pillow` (PIL) library, a visual representation of these colors is created as a `color_palette.png` image, with each color represented by a swatch.
+    *   **Note:** The current implementation has a predefined `color_map` to convert color names to RGB values. For colors not in this map, a default grey is used. You might need to expand this map for more diverse recommendations.
+7.  **Response:** The final PCA report (text) and the path to the generated color palette image are displayed to the user in the console.
 
+## Setup
 
-Set Up a Virtual Environment (recommended):Create and activate a virtual environment to keep dependencies separate:
-python -m venv venv
+### Prerequisites
 
+*   Python 3.9+
 
-On Windows:venv\Scripts\activate
+### Environment Variables
 
+You need to set your `GOOGLE_API_KEY` as an environment variable.
 
-On Mac/Linux:source venv/bin/activate
+1.  **Obtain API Key:** Get your Google API Key from [Google AI Studio](https://aistudio.google.com/app/apikey) or Google Cloud.
+2.  **Create `.env` file:** In the root directory of your project, create a file named `.env` and add your API key:
+    ```
+    GOOGLE_API_KEY="your_google_api_key_here"
+    ```
 
+### Installation
 
+1.  Clone the repository (if you haven't already).
+2.  Navigate to the project directory.
+3.  Install the required Python packages:
 
+    ```bash
+    pip install langchain==0.3.0 langgraph==0.4.8 langchain-google-genai==2.1.5 pillow==11.2.1 python-dotenv==1.0.1 pydantic==2.9.2 typing-extensions==4.12.2
+    ```
+    (Or, if you create a `requirements.txt` file from the above list, use `pip install -r requirements.txt`)
 
-Install Dependencies:Install the required Python packages:
-pip install -r requirements.txt
+## Usage
 
-The requirements.txt includes:
+1.  Ensure you have followed the `Setup` instructions and your `.env` file is correctly configured.
+2.  Run the Python script from your terminal:
 
-langchain==0.3.0
-langgraph==0.2.5
-langchain-google-genai==2.0.1
-pillow==10.4.0
-python-dotenv==1.0.1
-pydantic==2.9.2
-typing-extensions==4.12.2
+    ```bash
+    python your_script_name.py
+    ```
+    (Replace `your_script_name.py` with the actual name of your Python file, e.g., `pca_analyzer.py`)
 
+3.  The program will prompt you to enter a command. To perform PCA, use the format:
 
-Add Your Google API Key:Create a file named .env in the korean-pca-analyzer directory:
-echo GOOGLE_API_KEY=your-api-key-here > .env
+    ```
+    Enter 'analyze <image_path>' or 'quit' to exit: analyze /path/to/your/image.jpg
+    ```
+    Replace `/path/to/your/image.jpg` with the actual path to an image file on your system (e.g., `images/my_profile.png`).
 
-Replace your-api-key-here with your actual Google API key. Do not share this key publicly.
+4.  The assistant will process the image and print the PCA report in the console. A `color_palette.png` file will also be generated in the same directory where you run the script.
 
-Prepare a Photo:Have a JPEG or PNG photo ready (e.g., photo.jpg). Note its full path, such as F:\path\to\photo.jpg on Windows.
+5.  To exit the program, type `quit` or `exit`.
 
-
-How to Use
-
-Run the Program:In the terminal, with the virtual environment activated, run:
-python main.py
-
-
-Enter a Command:At the prompt, type:
-analyze path/to/your/photo.jpg
-
-
-On Windows, use backslashes (e.g., F:\langgggggggggggggg\ph.jpg) or double backslashes (F:\\langgggggggggggggg\\ph.jpg).
-Example:analyze F:\langgggggggggggggg\ph.jpg
-
-
-
-
-View Results:
-
-The program will output a PCA report with your palette, explanation, and recommended colors.
-A color palette image (color_palette.png) will be saved in the project directory, showing swatches of the suggested colors.
-
-
-
-Example Output:
-Assistant:
-**Korean PCA Result**
-{
-  "palette": "Warm Spring",
-  "explanation": "Your light skin with a warm, golden undertone and light brown hair suits the Warm Spring palette, which favors vibrant, warm colors.",
-  "colors": ["coral", "peach", "olive"]
-}
-**Color Palette Image**: Generated and saved at color_palette.png
-
-Project Files
-
-main.py: The main application code.
-requirements.txt: Lists Python dependencies.
-.env.example: Template for the .env file (copy to .env and add your API key).
-.gitignore: Excludes sensitive files (e.g., .env, images) from Git.
-README.md: This file.
-
-Troubleshooting
-
-“Image not found”:
-Check the photo path is correct. Test it with:python -c "import os; print(os.path.exists('F:\\langgggggggggggggg\\ph.jpg'))"
-
-If it returns False, ensure the file exists and is a JPEG or PNG.
-
-
-“Image analysis failed”:
-Verify your GOOGLE_API_KEY is correct in .env.
-Check Google Cloud Console for API limits or errors.
-
-
-Dependency Installation Fails:
-Ensure Python 3.8–3.11 is installed (python --version).
-Reactivate the virtual environment and rerun pip install -r requirements.txt.
-
-
-GitHub Push Errors:
-If you see “Repository not found,” confirm the repository exists at https://github.com/Ashrafgalib-beep/korean-pca-analyzer.
-Use a GitHub personal access token for authentication:
-Go to GitHub > Settings > Developer settings > Personal access tokens > Generate new token.
-Select repo scope and generate.
-Use the token as your password when pushing.
-
-
-
-
-
-Contributing
-Want to improve this project? Here’s how:
-
-Fork the repository on GitHub.
-Create a branch: git checkout -b my-new-feature.
-Make changes and commit: git commit -m "Added my feature".
-Push to your fork: git push origin my-new-feature.
-Open a pull request on GitHub.
-
-License
-This project is licensed under the MIT License. See the LICENSE file for details (to be added).
-Contact
-For questions, open an issue on GitHub or contact Ashrafgalib-beep.
-
-Enjoy discovering your perfect colors with K-beauty!
+## Example Interaction
