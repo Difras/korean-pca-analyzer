@@ -1,5 +1,5 @@
+![PCAana](https://github.com/user-attachments/assets/db88640c-ad65-40de-81d1-5ce6670819cd)
 # Korean Personal Color Analysis (PCA) AI Assistant
-
 This project provides an AI-powered assistant for Korean Personal Color Analysis (PCA). It analyzes an image of a person using Google's Gemini 1.5 Flash model, determines their most suitable PCA seasonal palette (Spring, Summer, Autumn, Winter, with subtypes), and generates a visual color palette based on the recommendations.
 
 ## Features
